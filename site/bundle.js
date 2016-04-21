@@ -9593,15 +9593,15 @@ module.exports = function render_metadata (boat) {
 
 	meta.selectAll('.meta-item')
 		.data([
-			['zeilnummer', boat.sailnumber],
-			['type', boat.boat.type],
-			['lengte', boat.boat.sizes.loa + 'm'],
-			['diepgang', boat.boat.sizes.draft + 'm'],
-			['breedte', boat.boat.sizes.beam + 'm'],
+			['Sail number', boat.sailnumber],
+			['Type', boat.boat.type],
+			['Length', boat.boat.sizes.loa + 'm'],
+			['Draft', boat.boat.sizes.draft + 'm'],
+			['Beam', boat.boat.sizes.beam + 'm'],
 			'<br />',
 			['GPH', boat.rating.gph],
-			['offshore TN', boat.rating.triple_offshore.join(', ')],
-			['inshore TN', boat.rating.triple_inshore.join(', ')],
+			['Offshore TN', boat.rating.triple_offshore.join(', ')],
+			['Inshore TN', boat.rating.triple_inshore.join(', ')],
 			'<div class="table-container"></table>',
 			['polar (csv)', '<textarea>' + polarcsv(boat) + '</textarea>', 'polar']
 		]).enter().append('div').attr('class', 'meta-item');

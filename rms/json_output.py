@@ -81,7 +81,7 @@ def jsonwriter_single(rmsdata, sailnumber):
     data = map(format_data, rmsdata)
     data = select(data, 'sailnumber', sailnumber)
 
-    print data
+    print(data)
     print(json.dumps(data, indent=2))
 
 
