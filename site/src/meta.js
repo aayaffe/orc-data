@@ -5,31 +5,64 @@ var polartable = require('./polartable.js');
 
 var meta = d3.select('#meta').attr('class', 'meta');
 
-module.exports = function render_metadata (boat) {
-	d3.select('#name').html(boat.name || '<span class="text-muted">Geen naam bekend</span>');
+function metaItem (label, className, contents, title) {
+    var className = 'meta-label' + (className ? ' ' + className : '');
+    var title = title ? 'title="' + title + '"' : '';
 
-	meta.selectAll('.meta-item')
-		.data([
-			['zeilnummer', boat.sailnumber],
-			['type', boat.boat.type],
-			['lengte', boat.boat.sizes.loa + 'm'],
-			['diepgang', boat.boat.sizes.draft + 'm'],
-			['breedte', boat.boat.sizes.beam + 'm'],
-			'<br />',
-			['GPH', boat.rating.gph],
-			['offshore TN', boat.rating.triple_offshore.join(', ')],
-			['inshore TN', boat.rating.triple_inshore.join(', ')],
-			'<div class="table-container"></table>',
-			['polar (csv)', '<textarea>' + polarcsv(boat) + '</textarea>', 'polar']
-		]).enter().append('div').attr('class', 'meta-item');
+    return '<span class="' + className + '" ' + title  + '>' + label + '</span> ' + contents;
+}
 
-	meta.selectAll('.meta-item').html(function (d) {
-		if (typeof d === 'string') {
-			return d;
-		} else {
-			var className = 'meta-label' + (d.length === 3 ? ' ' + d[2] : '');
-			return '<span class="' + className + '">' + d[0] + '</span> ' +  d[1];
-		}
-	});
-	polartable(meta.select('.table-container'), boat);
+function table (data) {
+    var header = '';
+    var contents = '';
+    for (var i = 0; i < data[0].length; i++) {
+        header += '<td class="meta-label">' + data[0][i] + '</td>';
+        contents += '<td>' + data[1][i] + '</td>'
+    }
+    return '<table class="meta-table"><tr>' + header + '</tr><tr>' + contents + '</tr></table>';
+}
+
+module.exports = function render_metadata (boat, extended) {
+    d3.select('#name').html(boat.name || '<span class="text-muted">Name unknown</span>');
+
+    var sizes = boat.boat.sizes;
+
+    var sailsTable = [['main', 'genoa'], [sizes.main + 'm²', sizes.genoa + 'm²']];
+    if (sizes.spinnaker > 0) {
+        sailsTable[0].push('spinnaker');
+        sailsTable[1].push(sizes.spinnaker + 'm²');
+    }
+    if (sizes.spinnaker_asym > 0) {
+        sailsTable[0].push('asym. spinnaker');
+        sailsTable[1].push(sizes.spinnaker_asym + 'm²');
+    }
+
+    meta.selectAll('.meta-item')
+        .data([
+            table([
+                ['sail number', 'type', 'designer', 'owner'],
+                [boat.sailnumber, boat.boat.type, boat.boat.designer, boat.owner]
+            ]),
+            table([
+                ['length', 'beam', 'draft', 'displacement'],
+                [sizes.loa + 'm', sizes.beam + 'm', sizes.draft + 'm', sizes.displacement + ' kg']
+            ]),
+            ['Max sail area', table(sailsTable)],
+            '<br />',
+            table([['GPH', 'OSN'], [boat.rating.gph, boat.rating.osn]]),
+            ['offshore TN', boat.rating.triple_offshore.join(', '), 'Offshore triple number'],
+            ['inshore TN', boat.rating.triple_inshore.join(', '), 'Inshore triple number'],
+            '<div class="table-container"></table>',
+            metaItem(
+                'polar (csv)',
+                'polar',
+                '<textarea class="' + (extended ? 'csv-extended' : '') + '">' + polarcsv(boat, extended) + '</textarea>'
+            )
+        ]).enter().append('div').attr('class', 'meta-item');
+
+    meta.selectAll('.meta-item').html(function (d) {
+        return (typeof d === 'string') ? d : metaItem(d[0], undefined, d[1], d[2]);
+    });
+
+    polartable(meta.select('.table-container'), boat);
 };
